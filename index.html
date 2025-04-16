@@ -1,0 +1,46 @@
+<!DOCTYPE html><html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>高配当株ナビ - 株価下落チェック</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .highlight-1 { background-color: orange; padding: 10px; margin-top: 10px; }
+    .highlight-2 { background-color: red; color: white; padding: 10px; margin-top: 10px; }
+    .highlight-3 { background-color: purple; color: white; padding: 10px; margin-top: 10px; }
+    input { margin-bottom: 10px; display: block; }
+  </style>
+</head>
+<body>
+  <h2>高配当株 購入検討チェッカー</h2><label>銘柄コード（例：9432）<input type="text" id="code"></label> <label>株数<input type="number" id="amount"></label> <label>取得平均価格<input type="number" id="buyPrice"></label> <label>保有日<input type="date" id="buyDate"></label> <label>基準額<input type="number" id="basePrice"></label>
+
+<button onclick="checkStock()">株価チェック</button>
+
+  <div id="result"></div>  <script>
+    async function checkStock() {
+      const code = document.getElementById('code').value.trim();
+      const amount = document.getElementById('amount').value;
+      const buyPrice = document.getElementById('buyPrice').value;
+      const buyDate = document.getElementById('buyDate').value;
+      const basePrice = parseFloat(document.getElementById('basePrice').value);
+      
+      const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${code}.T`);
+      const data = await response.json();
+      const currentPrice = data.quoteResponse.result[0]?.regularMarketPrice;
+
+      const result = document.getElementById('result');
+      result.innerHTML = `現在の株価: ${currentPrice} 円`;
+
+      const dropRate = (basePrice - currentPrice) / basePrice;
+
+      if (dropRate >= 0.6) {
+        result.innerHTML += `<div class="highlight-3">基準額から60%以上下落 → 【3回目買い増し検討】</div>`;
+      } else if (dropRate >= 0.4) {
+        result.innerHTML += `<div class="highlight-2">基準額から40%以上下落 → 【2回目買い増し検討】</div>`;
+      } else if (dropRate >= 0.2) {
+        result.innerHTML += `<div class="highlight-1">基準額から20%以上下落 → 【1回目買い増し検討】</div>`;
+      } else {
+        result.innerHTML += `<div>下落率はまだ小さいです。</div>`;
+      }
+    }
+  </script></body>
+</html>
